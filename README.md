@@ -63,7 +63,7 @@ Users can also retrieve, update or delete a collection as per their requirement.
 
 1. Clone the project.
     ```
-    git clone https://github.com/eknathyadav/met-office-climate.git
+    git clone https://github.com/aman-elliot/movie-collection-api.git
     ```
 
 2. Run virtual environment in the root folder
