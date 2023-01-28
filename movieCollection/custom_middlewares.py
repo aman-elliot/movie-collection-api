@@ -1,7 +1,7 @@
 from  collection.models import RequestCount
 
 
-
+#custom middleware for keeping count of requests
 class RequestLogMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response

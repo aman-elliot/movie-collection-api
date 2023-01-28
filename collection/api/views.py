@@ -21,6 +21,7 @@ from collection.models import Collection,Movies,Genre,GenreStats,User,RequestCou
 #default timeout 
 DEFAULT_TIMEOUT = 5 # seconds
 
+#setting timeout for requests
 class TimeoutHTTPAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
         self.timeout = DEFAULT_TIMEOUT
@@ -36,7 +37,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return super().send(request, **kwargs)
 
 
-
+#combining timeout with retries for flaky third party api
 http = requests.Session()
 retries = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500])
 http.mount("https://", TimeoutHTTPAdapter(max_retries=retries))
@@ -97,6 +98,8 @@ def listMovies(request):
 def listCollections(request):
 
     userObject=request.user
+    
+    # if the request is of type GET
     if request.method=='GET':
         
         querySet=userObject.collections.all()
@@ -112,6 +115,7 @@ def listCollections(request):
         }
         return Response(res, status=status.HTTP_200_OK)
 
+    # if the request is of type POST
     if request.method=='POST':
         print("username",request.user)
         request.data['user']=request.user.id
@@ -140,12 +144,14 @@ def listCollections(request):
 
 
 
-#update the movie list in the collection
+#Operations on the movie list in the collection
 @api_view(['GET','PUT','DELETE','PATCH'])
 @permission_classes([IsAuthenticated]) 
 def manipulate(request,collection_uuid):
 
     userObject=request.user
+
+    #if the request is of type GET
     if request.method=='GET':
         print("collection uuid",collection_uuid)
         try:
@@ -157,14 +163,14 @@ def manipulate(request,collection_uuid):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
+    #if the request is of type DELETE
     elif request.method=='DELETE':
         userObject.collections.get(uuid=collection_uuid).delete()
         return Response({"message":"collection with uuid " + collection_uuid+" deleted successfully"}, status=status.HTTP_200_OK)
 
 
 
-
+    #if the request is of type PUT
     elif request.method=="PUT":
         request.data['user']=request.user.id
         
@@ -200,7 +206,7 @@ def updateRequestCount(request):
         print("request count",request_count)
         return Response({"requests":request_count},status=status.HTTP_200_OK)
     
-
+#reset request count
 @api_view(['POST'])
 @permission_classes([IsAuthenticated]) 
 def resetRequestCount(request):

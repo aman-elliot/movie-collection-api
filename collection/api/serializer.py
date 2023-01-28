@@ -6,14 +6,15 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import make_password
 
 
+#serializer for user data and token generation
 class UserSerializer(serializers.ModelSerializer):
     token = serializers.SerializerMethodField()
-    #get_{field} 
+
     class Meta:
         model = User
         fields = ['username', 'password','token']
     
-    
+    #create refresh and access token post registration/login
     def get_token(self,user):
         print(user)
         refresh = RefreshToken.for_user(user)
@@ -23,35 +24,26 @@ class UserSerializer(serializers.ModelSerializer):
         'access_token': str(refresh.access_token)
             }
 
+    #keep password as hash in the database
     def validate_password(self, data):
         return make_password(data)
 
 
-    # def validate_password(self,data):
-    #     print("data",data)
-    #     if len(data)<10:
-    #         raise serializers.ValidationError("length of password must be greater than 10")
-    #     return data
-
-    # def validate_email(self,data):
-    #     print("data",data)
-    #     if len(data)<18:
-    #         raise serializers.ValidationError("age should be more than 18")
-    #     return data
-
+#serializer for genre
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ['genre_name']
 
 
-
+#serializer for movies
 class MovieSerializer(serializers.ModelSerializer):
     genres=GenreSerializer(many=True)
     class Meta:
         model = Movies
         fields = ['title','description','genres','uuid']
 
+    #return complete object instances based on the validated data
     def create(self,validated):
         genres = validated.pop("genres")
         print("genre validated",genres)
@@ -64,6 +56,7 @@ class MovieSerializer(serializers.ModelSerializer):
                 genre_instance.movie.add(movie_obj)
         return movie_obj
 
+#serializer for collections
 class CollectionSerializer(serializers.ModelSerializer):
     movies=MovieSerializer(many=True,write_only=True)
     class Meta:
@@ -73,6 +66,7 @@ class CollectionSerializer(serializers.ModelSerializer):
             'user': {'write_only': True}
         }
 
+    #return complete object instances based on the validated data
     def create(self,validated):
         print("validated data", validated)
         movies = validated.pop("movies")
@@ -85,12 +79,10 @@ class CollectionSerializer(serializers.ModelSerializer):
                 movie_instance.collection.add(collection_obj)
 
         return collection_obj
-    # def create(self, validated_data):
-    #     return super().create(validated_data)
-    # def get_favourite_genres(self,collectionObject):
-    #     return ','.join([i.genre_name for i in GenreStats.objects.filter(collection=collectionObject)])
+    
+    
 
-
+#collection-movie serializer
 class CollectionMovieSerializer(serializers.ModelSerializer):
     movies=MovieSerializer(many=True)
     class Meta:
@@ -100,6 +92,7 @@ class CollectionMovieSerializer(serializers.ModelSerializer):
             'user': {'write_only': True}
         }
     
+    #update complete object instances based on the validated data
     def update(self, instance, validated_data): 
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)

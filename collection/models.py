@@ -4,6 +4,8 @@ import uuid
 
 
 # Create your models here.
+
+#model for collection
 class Collection(models.Model):
     title = models.CharField(max_length=100)
     uuid = models.UUIDField(
@@ -15,6 +17,7 @@ class Collection(models.Model):
     def __str__(self) -> str:
         return self.title
 
+#model for movie details
 class Movies(models.Model):
     title = models.CharField(max_length=100)
     uuid = models.UUIDField(
@@ -26,12 +29,14 @@ class Movies(models.Model):
     def __str__(self) -> str:
         return self.title
 
+#model for genre 
 class Genre(models.Model):
     movie=models.ManyToManyField(Movies,related_name="genres")
     genre_name= models.CharField(max_length=30)
     def __str__(self) -> str:
         return self.genre_name
 
+#model for keep track of genre count
 class GenreStats(models.Model):
     
     user=models.ForeignKey(User,on_delete=models.CASCADE)
@@ -45,6 +50,7 @@ class GenreStats(models.Model):
         ordering = ['-genre_count']
 
 
+#model for keeping count of requests
 class RequestCount(models.Model):
     requestCount=models.IntegerField()
     def __str__(self) -> str:
